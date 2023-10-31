@@ -11,16 +11,20 @@ class SnapshotOperator(bpy.types.Operator):
     def execute(self, context):
         obj = context.active_object
 
-        # Switch to edit mode to access face data
+        # Store current mode and switch to edit mode to access face data
+        current_mode = bpy.context.object.mode
         bpy.ops.object.mode_set(mode='EDIT')
         bm = bmesh.from_edit_mesh(obj.data)
-        selected_faces = [f for f in bm.faces if f.select]
+        bm.faces.ensure_lookup_table()
 
-        if not selected_faces:
+        # Store indices of initially selected faces
+        initially_selected_faces_indices = [f.index for f in bm.faces if f.select]
+
+        if not initially_selected_faces_indices:
             self.report({'ERROR'}, "No faces selected!")
             return {'CANCELLED'}
 
-        face = selected_faces[0]
+        face = bm.faces[initially_selected_faces_indices[0]]
         normal = face.normal.copy()
         center = face.calc_center_median().copy()
 
@@ -47,8 +51,9 @@ class SnapshotOperator(bpy.types.Operator):
         bpy.ops.render.render(write_still=True)
 
         # Save the image
-        custom_path = bpy.path.abspath("//")
-        snapshot_path = os.path.join(custom_path, "snapshot.png")
+        snapshot_dir = "C:\\tmp"
+        os.makedirs(snapshot_dir, exist_ok=True)
+        snapshot_path = os.path.join(snapshot_dir, "snapshot.png")
         bpy.data.images['Render Result'].save_render(filepath=snapshot_path)
 
         # Store the path for later use
@@ -57,7 +62,17 @@ class SnapshotOperator(bpy.types.Operator):
         # Clean up: delete the camera
         bpy.data.objects.remove(camera)
 
+        # Reactivate the original object and restore initial selection
+        context.view_layer.objects.active = obj
+        bpy.ops.object.mode_set(mode='EDIT')
+        bm = bmesh.from_edit_mesh(obj.data)  # Re-acquire BMesh data
+        bm.faces.ensure_lookup_table()  # Update the internal index table
+        for face_index in initially_selected_faces_indices:
+            bm.faces[face_index].select = True
+        bpy.ops.object.mode_set(mode=current_mode)
+
         return {'FINISHED'}
+
 
 class ApplyGreebleTextureOperator(bpy.types.Operator):
     bl_idname = "object.apply_greeble_texture"
