@@ -1,4 +1,25 @@
 TODO LIST
 
-I/O Manager
-Binder
+Common
+  Revise save path to somewhere more appropriate; current:"C:\tmp"
+
+
+- apihandler.py
+  Add depthmap generation; payload example follows
+    {
+      "prompt": "PBR greeble texture",
+      "sampler_name": "Euler",
+      "alwayson_scripts": {
+        "controlnet": {
+          "args": [
+            {
+              "input_image": "base64...",
+              "model": "diff_control_sd15_depth_fp16 [978ef0a1]"
+            }
+          ]
+        }
+      }
+    }
+
+- operators.py
+  Implement logic to apply output image and depthmap as texture and depthmap
