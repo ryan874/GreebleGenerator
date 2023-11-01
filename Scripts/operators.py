@@ -82,10 +82,51 @@ class ApplyGreebleTextureOperator(bpy.types.Operator):
         snapshot_path = context.scene.greeble_generator_snapshot_path
 
         # Send the snapshot to Stable Diffusion
-        prompt = "Add greebles to this image"
+        prompt = context.scene.greeble_generator_prompt
         send_prompt_to_stable_diffusion(prompt, steps=5)
 
-        # Logic to apply the returned image as a texture
-        # ...
+        # Load the image
+        image_path = r'C:\tmp\output.png'
+        image = bpy.data.images.load(image_path)
+
+        # Create a new material
+        mat = bpy.data.materials.new(name="GreebleTextureMaterial")
+        mat.use_nodes = True
+        bsdf = mat.node_tree.nodes["Principled BSDF"]
+        tex_image = mat.node_tree.nodes.new('ShaderNodeTexImage')
+        tex_image.image = image
+        mat.node_tree.links.new(bsdf.inputs['Base Color'], tex_image.outputs['Color'])
+
+        # Assign material to the object
+        obj = context.active_object
+        if mat.name not in obj.data.materials:
+            obj.data.materials.append(mat)
+
+        # Ensure the object has UV mapping
+        if not obj.data.uv_layers:
+            obj.data.uv_layers.new()
+
+        # Get the index of the material
+        mat_index = obj.data.materials.find("GreebleTextureMaterial")
+
+        # Get selected face
+        bpy.ops.object.mode_set(mode='EDIT')
+        bm = bmesh.from_edit_mesh(obj.data)
+
+        # Ensure we're working with the latest data
+        bm.faces.ensure_lookup_table()
+
+        selected_faces = [f for f in bm.faces if f.select]
+        if not selected_faces:
+            self.report({'ERROR'}, "No faces selected!")
+            return {'CANCELLED'}
+
+        # Assign the material to the selected face
+        for face in selected_faces:
+            face.material_index = mat_index
+
+        # Update the mesh and return to Object Mode
+        bmesh.update_edit_mesh(obj.data)
+        bpy.ops.object.mode_set(mode='OBJECT')
 
         return {'FINISHED'}

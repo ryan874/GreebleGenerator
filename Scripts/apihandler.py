@@ -15,15 +15,23 @@ def get_encoded_image(image_path):
 def send_prompt_to_stable_diffusion(prompt, steps=5):
     snapshot_path = r"C:\tmp\snapshot.png"
     EncodedImage = get_encoded_image(snapshot_path)
+    Model_name = "sd-v1-5-pruned-noema-fp16"	# Model name
+    Lora_name = "<lora:Greeble_dataset-10:1>"	# LoRA name
 
     if EncodedImage is None:
         print("Snapshot image not found.")
         return  # Or handle the absence of the image as needed
 
+    # Set model to specific model to use fine-tuned LoRA model
     url = "http://127.0.0.1:7860"
+    opt = requests.get(url=f'{url}/sdapi/v1/options')
+    opt_json = opt.json()
+    opt_json['sd_model_checkpoint'] = Model_name
+    requests.post(url=f'{url}/sdapi/v1/options', json=opt_json)
+
     payload = {
         "init_images": [EncodedImage],
-        "prompt": prompt,
+        "prompt": f"{prompt}, {Lora_name}",
         "steps": steps
     }
 

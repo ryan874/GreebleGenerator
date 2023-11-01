@@ -9,9 +9,14 @@ class GreebleGeneratorPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        scene = context.scene
 
         # Button for Snapshot Operator
         layout.operator("object.snapshot_operator", text="Take Snapshot")
+
+        # Textbox for the prompt
+        row = layout.row()
+        row.prop(scene, "greeble_generator_prompt")
 
         # Button for Apply Greeble Texture Operator
         layout.operator("object.apply_greeble_texture", text="Apply Greeble Texture")

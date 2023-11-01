@@ -45,12 +45,18 @@ def register():
         description="Path to the snapshot image",
         default=""
     )
+    bpy.types.Scene.greeble_generator_prompt = bpy.props.StringProperty(
+        name="Greeble Prompt",
+        description="Enter the prompt for the Greeble Generator",
+        default="grb, mechanical parts, mechanical pistons and parts, hard surface, rigorous detail, precise detail, ultra realistic, highly detailed, sophisticated Generate a high-resolution, detailed texture-like image filled with intricate greebles and sci-fi details. The image should showcase a complex array of mechanical and futuristic elements, with a focus on metallic textures, interlocking geometric shapes, and a monochromatic color scheme with hints of neon blue. The overall mood is futuristic and high-tech, resembling the surface of a sci-fi spaceship or machinery, with a fine balance of shadows and light to enhance the 3D effect of the greebles."
+    )
 
 def unregister():
     bpy.utils.unregister_class(SnapshotOperator)
     bpy.utils.unregister_class(ApplyGreebleTextureOperator)
     bpy.utils.unregister_class(GreebleGeneratorPanel)
     del bpy.types.Scene.greeble_generator_snapshot_path
+    del bpy.types.Scene.greeble_generator_prompt
 
 if __name__ == "__main__":
     register()
