@@ -9,12 +9,21 @@ This is my Graduation Project.
 - Blender(3.0 or higher; recommend 3.5)
 
 
+## Models
+- Stable Diffusion 1.5 : sd-v1-5-pruned-noema-fp16.safetensors(https://huggingface.co/hollowstrawberry/stable-diffusion-guide/blob/main/models/sd-v1-5-pruned-noema-fp16.safetensors)
+- Depth Map esimation model for ControlNet : (https://huggingface.co/lllyasviel/ControlNet/blob/main/models/control_sd15_depth.pth)
+- LoRA trained model for Greeble Generator : Greeble_dataset-10.safetensors (in this repository->models)
+
 ## Installation
 1. Download this repository as zip file and open Blender.
 2. Navigate to Edit->Preferences->Add-ons->Install and select zip file you downloaded.
 3. Make sure "Greeble Generator" is enabled and restart Blender.
 4. Navigate to Stable Diffusion Web UI installed folder and edit webui-user.bat.
 5. Add "--api" to "COMMANDLINE_ARGS"
+6. Navigate to stable-diffusion-webui -> models.
+7. Put sd-v1-5-pruned-noema-fp16.safetensors into models/Stable-diffusion.
+8. Put control_sd15_depth.pth into models/ControlNet.
+9. Put Greeble_dataset-10.safetensors into models/Lora
 
 
 ## Run
