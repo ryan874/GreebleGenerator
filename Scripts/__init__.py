@@ -28,7 +28,7 @@ from bpy.props import StringProperty
 bl_info = {
     "name": "Greeble Generator",
     "author": "2014312728",
-    "version": (1, 08),
+    "version": (1, 0),
     "blender": (3, 5, 0),
     "location": "View3D > N Panel > Greeble Tab",
     "description": "Generates greebles using Stable Diffusion",
