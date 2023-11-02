@@ -21,11 +21,13 @@ class GreebleGeneratorPanel(bpy.types.Panel):
         # Button for Apply Greeble Texture Operator
         layout.operator("object.apply_greeble_texture", text="Apply Greeble Texture")
 
-def register():
-    bpy.utils.register_class(GreebleGeneratorPanel)
+        # Button for Apply Depth Map Operator
+        layout.operator("object.apply_depth_map", text="Apply Depth Map")
 
-def unregister():
-    bpy.utils.unregister_class(GreebleGeneratorPanel)
+        # Slider for texture scale
+        layout.prop(scene, "greeble_texture_scale")
+        layout.operator("object.scale_uv_operator", text="Scale UV")
 
-if __name__ == "__main__":
-    register()
+        # Button for Save Textures Operator
+        layout.operator("object.save_textures_operator", text="Save Textures")
+
