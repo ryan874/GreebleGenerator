@@ -31,6 +31,9 @@ This is my Graduation Project.
 2. Open Blender in administrator mode.
 3. Select desired face in face mode and press "Take Snapshot" in N Panel(Press N to activate).
 4. Press "Apply Greeble Texture".
+5. You can keep generate different textures by hitting "Apply Greeble Texture" multiple times.
+6. After texture is successfully applied, press "Apply Depth Map".
+7. You can adjust UV Map scale(experimental) and save textures&depthmap. 
 
 
 ## Credits and Licenses
