@@ -11,7 +11,7 @@ This is my Graduation Project.
 
 ## Models
 - Stable Diffusion 1.5 : sd-v1-5-pruned-noema-fp16.safetensors(https://huggingface.co/hollowstrawberry/stable-diffusion-guide/blob/main/models/sd-v1-5-pruned-noema-fp16.safetensors)
-- Depth Map esimation model for ControlNet : (https://huggingface.co/lllyasviel/ControlNet/blob/main/models/control_sd15_depth.pth)
+- Depth Map estimation model for ControlNet : (https://huggingface.co/lllyasviel/ControlNet/blob/main/models/control_sd15_depth.pth)
 - LoRA trained model for Greeble Generator : Greeble_dataset-10.safetensors (in this repository->models)
 
 ## Installation
