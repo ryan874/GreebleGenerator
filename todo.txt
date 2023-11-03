@@ -2,3 +2,4 @@ TODO LIST
 
 - operators.py
   modify to create GreebleTextureMaterial with unique names; it works fine with textures but depthmap could be weird when applied to multiple faces
+  something funny going on with apply texture scale
