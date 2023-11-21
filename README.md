@@ -6,6 +6,7 @@ This is my Graduation Project.
 
 ## Dependencies
 - Stable Diffusion Web UI by Automatic1111 should be installed locally. (https://github.com/AUTOMATIC1111/stable-diffusion-webui)
+- ContorlNet Extension for SD Web-UI should be installed via SD Web-UI -> Extensions -> Install from URL -> (https://github.com/Mikubill/sd-webui-controlnet)
 - Blender(3.0 or higher; recommend 3.5)
 
 
