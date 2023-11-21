@@ -52,6 +52,23 @@ bpy.types.Scene.greeble_texture_scale = bpy.props.FloatProperty(
     update=update_texture_scale
 )
 
+bpy.types.Scene.greeble_cfg_scale = bpy.props.FloatProperty(
+    name="CFG Scale",
+    description="Conditional Free Guidance Scale for Stable Diffusion",
+    default=7.0,
+    min=1.0,
+    max=30.0,
+    step=50,  # Represents a step of 0.5
+)
+
+bpy.types.Scene.greeble_denoising_strength = bpy.props.FloatProperty(
+    name="Denoising Strength",
+    description="Strength of denoising for Stable Diffusion",
+    default=0.80,
+    min=0.0,
+    max=1.0
+)
+
 
 def register():
     bpy.utils.register_class(SnapshotOperator)

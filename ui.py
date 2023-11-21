@@ -18,6 +18,12 @@ class GreebleGeneratorPanel(bpy.types.Panel):
         row = layout.row()
         row.prop(scene, "greeble_generator_prompt")
 
+        # Slider for CFG scale
+        layout.prop(scene, "greeble_cfg_scale", slider=True)
+
+        # Slider for denoising strength
+        layout.prop(scene, "greeble_denoising_strength", slider=True)
+
         # Button for Apply Greeble Texture Operator
         layout.operator("object.apply_greeble_texture", text="Apply Greeble Texture")
 

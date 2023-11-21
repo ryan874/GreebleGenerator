@@ -25,32 +25,35 @@ class SnapshotOperator(bpy.types.Operator):
         # Store indices of initially selected faces
         initially_selected_faces_indices = [f.index for f in bm.faces if f.select]
 
-        if not initially_selected_faces_indices:
+        # Get selected faces
+        selected_faces = [f for f in bm.faces if f.select]
+
+        if not selected_faces:
             self.report({'ERROR'}, "No faces selected!")
             return {'CANCELLED'}
 
-        face = bm.faces[initially_selected_faces_indices[0]]
-        normal = face.normal.copy()
-        center = face.calc_center_median().copy()
+        # Calculate the collective bounding box and average normal
+        bbox_corners = [v.co for f in selected_faces for v in f.verts]
+        min_corner = Vector(map(min, zip(*bbox_corners)))
+        max_corner = Vector(map(max, zip(*bbox_corners)))
+        center = (min_corner + max_corner) / 2
+        avg_normal = sum((f.normal for f in selected_faces), Vector()) / len(selected_faces)
 
-        # Calculate the maximum edge length for orthographic scale
-        max_edge_length = max([edge.calc_length() for edge in face.edges])
+        # Calculate orthographic scale based on the bounding box
+        bbox_dimensions = max_corner - min_corner
+        max_dimension = max(bbox_dimensions.x, bbox_dimensions.y, bbox_dimensions.z)
 
-        # Switch back to object mode before adding the camera
+        # Switch back to object mode
         bpy.ops.object.mode_set(mode='OBJECT')
 
-        # Create a new camera
+        # Create and position the camera
         bpy.ops.object.camera_add()
         camera = context.object
         camera.data.type = 'ORTHO'
-
-        # Align camera to face and set distance
-        camera.rotation_euler = normal.rotation_difference(mathutils.Vector((0, 0, -1))).to_euler()
-        camera_offset = max_edge_length  # Distance from the face
-        camera.location = center + normal * camera_offset
-
-        # Set orthographic scale
-        camera.data.ortho_scale = max_edge_length
+        camera.rotation_euler = avg_normal.rotation_difference(Vector((0, 0, -1))).to_euler()
+        camera_offset = max_dimension  # Adjust this value as needed
+        camera.location = center + avg_normal * camera_offset
+        camera.data.ortho_scale = max_dimension
 
         # Set camera resolution to 1:1 aspect ratio
         render = bpy.context.scene.render
@@ -81,8 +84,17 @@ class SnapshotOperator(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='EDIT')
         bm = bmesh.from_edit_mesh(obj.data)  # Re-acquire BMesh data
         bm.faces.ensure_lookup_table()  # Update the internal index table
+
+        # Deselect all faces first
+        for face in bm.faces:
+            face.select = False
+
+        # Reselect initially selected faces
         for face_index in initially_selected_faces_indices:
             bm.faces[face_index].select = True
+
+        # Update mesh and switch back to the original mode
+        bmesh.update_edit_mesh(obj.data)
         bpy.ops.object.mode_set(mode=current_mode)
 
         return {'FINISHED'}
@@ -94,6 +106,17 @@ class ApplyGreebleTextureOperator(bpy.types.Operator):
 
     def execute(self, context):
         snapshot_path = context.scene.greeble_generator_snapshot_path
+
+        obj = context.active_object
+
+        # Store current mode and switch to edit mode to access face data
+        current_mode = bpy.context.object.mode
+        bpy.ops.object.mode_set(mode='EDIT')
+        bm = bmesh.from_edit_mesh(obj.data)
+        bm.faces.ensure_lookup_table()
+
+        # Store indices of initially selected faces
+        initially_selected_faces_indices = [f.index for f in bm.faces if f.select]
 
         # Send the snapshot to Stable Diffusion
         prompt = context.scene.greeble_generator_prompt
@@ -114,6 +137,18 @@ class ApplyGreebleTextureOperator(bpy.types.Operator):
 
         # Apply material to selected faces
         self.apply_material_to_selected_faces(context, mat)
+
+        # Reactivate the original object and restore initial face selection
+        bpy.ops.object.mode_set(mode='EDIT')
+        bm = bmesh.from_edit_mesh(obj.data)  # Re-acquire BMesh data
+        bm.faces.ensure_lookup_table()  # Update the internal index table
+        for face in bm.faces:
+            face.select = False  # Deselect all faces first
+        for face_index in initially_selected_faces_indices:
+            bm.faces[face_index].select = True  # Reselect initially selected faces
+        bmesh.update_edit_mesh(obj.data)
+
+        bpy.ops.object.mode_set(mode=current_mode)
 
         return {'FINISHED'}
 
@@ -152,6 +187,17 @@ class ApplyDepthMapOperator(bpy.types.Operator):
 
     def execute(self, context):
 
+        obj = context.active_object
+
+        # Store current mode and switch to edit mode to access face data
+        current_mode = bpy.context.object.mode
+        bpy.ops.object.mode_set(mode='EDIT')
+        bm = bmesh.from_edit_mesh(obj.data)
+        bm.faces.ensure_lookup_table()
+
+        # Store indices of initially selected faces
+        initially_selected_faces_indices = [f.index for f in bm.faces if f.select]
+
 	# Send Output image to Stable Diffusion
         get_depth_map("", steps=10)
 
@@ -161,9 +207,10 @@ class ApplyDepthMapOperator(bpy.types.Operator):
         depth_image = bpy.data.images.load(depth_image_path)
 
         # Get the material
-        mat = bpy.data.materials.get("GreebleTextureMaterial")
+        # mat = bpy.data.materials.get("GreebleTextureMaterial")
+        mat = self.get_selected_face_material(self, context)
         if not mat:
-            self.report({'ERROR'}, "GreebleTextureMaterial not found!")
+            self.report({'ERROR'}, "Material not found!")
             return {'CANCELLED'}
 
         # Add a displacement node and connect the depth map
@@ -174,7 +221,36 @@ class ApplyDepthMapOperator(bpy.types.Operator):
             self.report({'WARNING'}, "Depth map image not found. Skipping depth map application.")
             return {'FINISHED'}
 
+        # Reactivate the original object and restore initial face selection
+        bpy.ops.object.mode_set(mode='EDIT')
+        bm = bmesh.from_edit_mesh(obj.data)  # Re-acquire BMesh data
+        bm.faces.ensure_lookup_table()  # Update the internal index table
+        for face in bm.faces:
+            face.select = False  # Deselect all faces first
+        for face_index in initially_selected_faces_indices:
+            bm.faces[face_index].select = True  # Reselect initially selected faces
+        bmesh.update_edit_mesh(obj.data)
+
+        bpy.ops.object.mode_set(mode=current_mode)
+
         return {'FINISHED'}
+
+
+    @staticmethod
+    def get_selected_face_material(self, context):
+        obj = context.active_object
+        bpy.ops.object.mode_set(mode='EDIT')
+        bm = bmesh.from_edit_mesh(obj.data)
+        bm.faces.ensure_lookup_table()
+        selected_faces = [f for f in bm.faces if f.select]
+
+        if not selected_faces:
+            return None
+
+        # Assuming the first selected face's material
+        face_mat_index = selected_faces[0].material_index
+        bpy.ops.object.mode_set(mode='OBJECT')
+        return obj.data.materials[face_mat_index] if face_mat_index < len(obj.data.materials) else None
 
 
     @staticmethod

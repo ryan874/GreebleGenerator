@@ -1,3 +1,4 @@
+import bpy
 import io
 import base64
 import os
@@ -18,6 +19,8 @@ def send_prompt_to_stable_diffusion(prompt, steps=5):
     EncodedImage = get_encoded_image(snapshot_path)
     Model_name = "sd-v1-5-pruned-noema-fp16"	# Model name
     Lora_name = "<lora:Greeble_dataset-10:1>"	# LoRA name
+    cfg_scale = bpy.context.scene.greeble_cfg_scale
+    denoising_strength = bpy.context.scene.greeble_denoising_strength
 
     if EncodedImage is None:
         print("Snapshot image not found.")
@@ -34,7 +37,8 @@ def send_prompt_to_stable_diffusion(prompt, steps=5):
 	"prompt": f"{prompt} {Lora_name}",
         "init_images": [EncodedImage],
         "steps": steps,
-        "denoising_strength": 1
+        "cfg_scale": cfg_scale,
+        "denoising_strength": denoising_strength
     }
 
     response = requests.post(url=f'{url}/sdapi/v1/img2img', json=payload)
